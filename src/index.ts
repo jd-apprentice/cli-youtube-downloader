@@ -3,14 +3,22 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import open from "open";
 import chalkAnimation from "chalk-animation";
-import ytdl from "ytdl-core";
-import fs from "fs";
-import { aboutText, baseURL, menuChoices } from "./const";
 
 // constants
-let appInstance: boolean = true; // App state
-let urlToDownload: string = ""; // URL to download
+var appInstance: boolean = true; // App state
+var urlToDownload: string = ""; // URL to download
 const sleep = (ms = 1000) => new Promise((r) => setTimeout(r, ms)); // sleep for 1 second
+const baseURL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+const menuChoices = ["1", "2", "3", "4"]; // Menu choices
+const aboutText = `
+░█░█░█▀█░█░█░▀█▀░█░█░█▀▄░█▀▀░░░█▀▄░█▀█░█░█░█▀█░█░░░█▀█░█▀█░█▀▄░█▀▀░█▀▄
+░░█░░█░█░█░█░░█░░█░█░█▀▄░█▀▀░░░█░█░█░█░█▄█░█░█░█░░░█░█░█▀█░█░█░█▀▀░█▀▄
+░░▀░░▀▀▀░▀▀▀░░▀░░▀▀▀░▀▀░░▀▀▀░░░▀▀░░▀▀▀░▀░▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀▀░░▀▀▀░▀░▀
+
+░█▀▄░█░█░░░▀▀█░█▀▄░░░░░█▀█░█▀█░█▀█░█▀▄░█▀▀░█▀█░▀█▀░▀█▀░█▀▀░█▀▀
+░█▀▄░░█░░░░░░█░█░█░▄▄▄░█▀█░█▀▀░█▀▀░█▀▄░█▀▀░█░█░░█░░░█░░█░░░█▀▀
+░▀▀░░░▀░░░░▀▀░░▀▀░░░░░░▀░▀░▀░░░▀░░░▀░▀░▀▀▀░▀░▀░░▀░░▀▀▀░▀▀▀░▀▀▀
+`;
 
 // functions
 async function welcome(): Promise<void> {
@@ -39,16 +47,14 @@ async function about(): Promise<void> {
 async function handleMenu(choice: string): Promise<void> {
   if (choice == "1") await askVideo();
   if (choice == "2") await about();
-  if (choice == "3") await open(baseURL);
+  if (choice == "3") await open(baseURL)
   if (choice == "4") appInstance = false;
 }
 
 // ---------------------------------------------------------------- //
+// TODO: Download the video
 async function handleDownload(video: string): Promise<void> {
-  const isValid = ytdl.validateURL(video);
-  isValid
-    ? ytdl(video).pipe(fs.createWriteStream("video.mp4"))
-    : (console.log("Thats not a valid URL!"), menuActions());
+  console.log(video);
 }
 
 // ---------------------------------------------------------------- //

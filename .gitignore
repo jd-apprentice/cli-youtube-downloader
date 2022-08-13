@@ -2,4 +2,3 @@ node_modules
 DS-STORE
 build
 yarn-error.*
-.index.ts.*
