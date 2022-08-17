@@ -1,70 +1,45 @@
 // imports
+import { ChildProcess } from "child_process";
 import fs from "fs";
-import chalk from "chalk";
-import chalkAnimation from "chalk-animation";
 import inquirer from "inquirer";
 import open from "open";
 import ytdl from "ytdl-core";
+import { about, welcome } from "./utils.js";
 
-// TODO: Refactor && add progress bar for the download
+// ------------------------CONSTANTS AND TYPES---------------------------------------- //
+type choicesType = {
+  one: () => Promise<void>;
+  two: () => Promise<void>;
+  three: () => Promise<ChildProcess>;
+  four: () => boolean;
+};
 
-// constants
-let appInstance: boolean = true; // App state
-let urlToDownload: string = ""; // URL to download
-const sleep = (ms = 1000) => new Promise((r) => setTimeout(r, ms)); // sleep for 1 second
-const aboutText = `
-░█░█░█▀█░█░█░▀█▀░█░█░█▀▄░█▀▀░░░█▀▄░█▀█░█░█░█▀█░█░░░█▀█░█▀█░█▀▄░█▀▀░█▀▄
-░░█░░█░█░█░█░░█░░█░█░█▀▄░█▀▀░░░█░█░█░█░█▄█░█░█░█░░░█░█░█▀█░█░█░█▀▀░█▀▄
-░░▀░░▀▀▀░▀▀▀░░▀░░▀▀▀░▀▀░░▀▀▀░░░▀▀░░▀▀▀░▀░▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀▀░░▀▀▀░▀░▀
-
-░█▀▄░█░█░░░▀▀█░█▀▄░░░░░█▀█░█▀█░█▀█░█▀▄░█▀▀░█▀█░▀█▀░▀█▀░█▀▀░█▀▀
-░█▀▄░░█░░░░░░█░█░█░▄▄▄░█▀█░█▀▀░█▀▀░█▀▄░█▀▀░█░█░░█░░░█░░█░░░█▀▀
-░▀▀░░░▀░░░░▀▀░░▀▀░░░░░░▀░▀░▀░░░▀░░░▀░▀░▀▀▀░▀░▀░░▀░░▀▀▀░▀▀▀░▀▀▀
-`;
-const menuChoices = ["1", "2", "3", "4"];
+let appInstance: boolean = true;
+let urlToDownload: string = "";
+const menuChoices = ["one", "two", "three", "four"];
 const baseURL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+const choices: choicesType = {
+  one: async () => await askVideo(),
+  two: async () => await about(),
+  three: async () => await open(baseURL),
+  four: () => (appInstance = false),
+};
 
-// functions
-async function welcome(): Promise<void> {
-  chalkAnimation.rainbow("Youtube Downloader");
-  await sleep();
-  console.log(`
-    ░█▄█░█▀▀░█▀█░█░█░░░█▀█░█▀█░▀█▀░▀█▀░█▀█░█▀█░█▀▀
-    ░█░█░█▀▀░█░█░█░█░░░█░█░█▀▀░░█░░░█░░█░█░█░█░▀▀█
-    ░▀░▀░▀▀▀░▀░▀░▀▀▀░░░▀▀▀░▀░░░░▀░░▀▀▀░▀▀▀░▀░▀░▀▀▀ 
-
-    1 - Download a video from Youtube
-    2 - About the project
-    3 - ${chalk.bgRed("????")}
-    4 - Exit
-  `);
+// ------------------------HANDLE MENU---------------------------------------- //
+async function handleMenu(choice: keyof typeof choices): Promise<void> {
+  choices[choice]();
 }
 
-// ---------------------------------------------------------------- //
-async function about(): Promise<void> {
-  console.log(aboutText);
-  await sleep();
-  menuActions();
-}
-
-// ---------------------------------------------------------------- //
-async function handleMenu(choice: string): Promise<void> {
-  if (choice == "1") await askVideo();
-  if (choice == "2") await about();
-  if (choice == "3") await open(baseURL);
-  if (choice == "4") appInstance = false;
-}
-
-// ---------------------------------------------------------------- //
-async function handleDownload(video: string): Promise<void> {
+// ------------------------DOWNLOAD VIDEO---------------------------------------- //
+export async function handleDownload(video: string): Promise<void> {
   const isValid = ytdl.validateURL(video);
   isValid
     ? ytdl(video).pipe(fs.createWriteStream("video.mp4"))
     : (console.log("Not a valid URL!"), menuActions());
 }
 
-// ---------------------------------------------------------------- //
-async function askVideo(): Promise<void | string | undefined> {
+// ------------------------GET VIDEO---------------------------------------- //
+export async function askVideo(): Promise<void> {
   const answers = await inquirer.prompt({
     name: "url",
     type: "input",
@@ -74,8 +49,8 @@ async function askVideo(): Promise<void | string | undefined> {
   return handleDownload(urlToDownload);
 }
 
-// ---------------------------------------------------------------- //
-async function menuActions(): Promise<void | string | undefined> {
+// ------------------------MENU ACTIONS---------------------------------------- //
+export async function menuActions(): Promise<void> {
   const answers = await inquirer.prompt({
     name: "menu_question",
     type: "list",
@@ -85,12 +60,11 @@ async function menuActions(): Promise<void | string | undefined> {
   return handleMenu(answers.menu_question);
 }
 
-// Run app
+// ------------------------RUN APP---------------------------------------- //
 console.clear();
 while (appInstance) {
   console.clear();
   await welcome();
   await menuActions();
   appInstance = false;
-  console.log("Goodbye!");
 }
